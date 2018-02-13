@@ -1,0 +1,122 @@
+var dom=document.getElementById("clock");
+var ctx=dom.getContext("2d");
+var width=ctx.canvas.width;
+var height=ctx.canvas.height;
+var r=width/2;
+var rem=width/200;   // canvas的放大缩小比例
+
+
+// 画表盘：
+function drawBackground(){
+    ctx.save();
+    ctx.translate(r,r);    // 重新绘制圆点坐标
+    ctx.beginPath();   // 开始路径
+    ctx.lineWidth=10*rem;
+    ctx.arc(0,0,r-ctx.lineWidth/2,0,2*Math.PI,false);
+    ctx.stroke();
+
+
+    // 时针：
+    var hourNumbers=[3,4,5,6,7,8,9,10,11,12,1,2];
+    ctx.font=18*rem+'px Arial';   // 注意要在填充文本之前定义字体；
+    ctx.textAlign="center";  // 注意要在填充文本之前定义居中；
+    ctx.textBaseline="middle";  // 注意要在填充文本之前定义居中；
+    hourNumbers.forEach(function(number,i){
+        var rad=2*Math.PI/12*i;    // 每小时的弧度
+        var x=Math.cos(rad)*(r-30*rem);   // X轴坐标=con弧度*半径；
+        var y=Math.sin(rad)*(r-30*rem);   // y轴坐标=sin弧度*半径；
+        ctx.fillText(number,x,y);
+    });
+
+    // 秒针：
+    for(var i=0;i<60;i++){
+        var rad=2*Math.PI/60*i;    // 每秒的弧度
+        var x=Math.cos(rad)*(r-18*rem);
+        var y=Math.sin(rad)*(r-18*rem);
+        ctx.beginPath();
+        if(i%5==0){
+            ctx.fillStyle="#000";
+            ctx.arc(x,y,2*rem,0,2*Math.PI,false);
+        }else{
+            ctx.fillStyle="#ccc";
+            ctx.arc(x,y,2*rem,0,2*Math.PI,false);
+        }
+        ctx.fill();
+    }
+
+}
+
+// 画时针：
+
+function drawHour(hour,minute){
+    ctx.save();   //把当前画小时的环境保存下来
+    ctx.beginPath();
+    var rad=2*Math.PI/12*hour;  //每个小时所要旋转的弧度
+    var mrad=2*Math.PI/12/60*minute;   // 每小时下每分钟所旋转的弧度
+    ctx.rotate(rad+mrad);
+    ctx.lineWidth=6*rem;
+    ctx.lineCap="round";
+    ctx.moveTo(0,10*rem);
+    ctx.lineTo(0,-r/2);
+    ctx.stroke();
+    ctx.restore();  // 把之前保存的路径给还原出去
+}
+
+// 画分针：
+
+function drawMinute(minute){
+    ctx.save();   //把当前画小时的环境保存下来
+    ctx.beginPath();
+    var rad=2*Math.PI/60*minute;  //每个小时所要旋转的弧度
+    ctx.rotate(rad);
+    ctx.lineWidth=3*rem;
+    ctx.lineCap="round";
+    ctx.moveTo(0,10*rem);
+    ctx.lineTo(0,-r+30*rem);
+    ctx.stroke();
+    ctx.restore();  // 把之前保存的路径给还原出去
+}
+
+
+// 画秒针：
+
+function drawSecond(second){
+    ctx.save();   //把当前画小时的环境保存下来
+    ctx.beginPath();
+    ctx.fillStyle='#c14543';
+    var rad=2*Math.PI/60*second;  //每个小时所要旋转的弧度
+    ctx.rotate(rad);
+    ctx.moveTo(-2*rem,20*rem);
+    ctx.lineTo(2*rem,20*rem);
+    ctx.lineTo(1,-r+18*rem);
+    ctx.lineTo(-1,-r+18*rem);
+    ctx.fill();
+    ctx.restore();  // 把之前保存的路径给还原出去
+}
+
+// 画中心圆点：
+
+function drawDot(){
+    ctx.beginPath();
+    ctx.fillStyle="#fff";
+    ctx.arc(0,0,3*rem,0,2*Math.PI,false);
+    ctx.fill();
+}
+
+
+function draw(){
+    ctx.clearRect(0,0,width,height);
+    var now=new Date();
+    var hour=now.getHours();
+    var minute=now.getMinutes();
+    var second=now.getSeconds();
+    drawBackground();
+    drawHour(hour,minute);
+    drawMinute(minute);
+    drawSecond(second);
+    drawDot();
+    ctx.restore();
+}
+draw();
+
+setInterval(draw,1000);
